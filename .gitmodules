@@ -1,3 +1,3 @@
 [submodule "Protobuf-DevKit-Neuro"]
-	path = proto
+	path = Protobuf-DevKit-Neuro
 	url = https://github.com/hrisancho/Protobuf-DevKit-Neuro.git
