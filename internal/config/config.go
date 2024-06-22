@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"log"
@@ -7,8 +7,14 @@ import (
 	"time"
 
 	"go.uber.org/zap/zapcore"
+	"smart-doors-server/internal/validator"
 
 	"github.com/spf13/viper"
+)
+
+const (
+	ProtocolHTTP  = "http"
+	ProtocolHTTPS = "https"
 )
 
 const (
@@ -34,6 +40,22 @@ const (
 var (
 	DebugLevel = zapcore.DebugLevel
 )
+
+type ConfigRedis struct {
+	// Addr - адрес Redis сервера
+	Addr     string `mapstructure:"REDIS_ADDR" validate:"required"`
+	Username string `mapstructure:"REDIS_USERNAME"`
+	Password string `mapstructure:"REDIS_PASSWORD"`
+	// DB - номер БД Redis
+	DB int `mapstructure:"REDIS_DB"`
+}
+
+type ConfigInflux struct {
+	Bucket       string `mapstructure:"INFLUX_BUCKET" validate:"required"`
+	Organization string `mapstructure:"INFLUX_ORGANIZATION" validate:"required"`
+	Token        string `mapstructure:"INFLUX_TOKEN" validate:"required"`
+	URL          string `mapstructure:"INFLUX_URL" validate:"required"`
+}
 
 // Config используется для хранения конфигурации сервера.
 type Config struct {

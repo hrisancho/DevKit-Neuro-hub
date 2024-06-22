@@ -1,8 +1,8 @@
 package main
 
 import (
+	utils "DevKit-Neuro-hub/internal/crc"
 	controller "DevKit-Neuro-hub/proto"
-	utils "DevKit-Neuro-hub/utils"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"log"
