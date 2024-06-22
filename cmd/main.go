@@ -1,8 +1,8 @@
 package main
 
 import (
-	controller "DevKit-Neuro-plotter/proto"
-	utils "DevKit-Neuro-plotter/utils"
+	controller "DevKit-Neuro-hub/proto"
+	utils "DevKit-Neuro-hub/utils"
 	"fmt"
 	"google.golang.org/protobuf/proto"
 	"log"

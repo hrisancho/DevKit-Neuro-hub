@@ -1,4 +1,4 @@
-module DevKit-Neuro-plotter
+module DevKit-Neuro-hub
 
 go 1.22.3
 
