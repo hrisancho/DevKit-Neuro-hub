@@ -1,69 +1,42 @@
 package main
 
 import (
-	utils "DevKit-Neuro-hub/internal/crc"
-	controller "DevKit-Neuro-hub/proto"
-	"fmt"
-	"google.golang.org/protobuf/proto"
+	"DevKit-Neuro-hub/internal/config"
+	main_logger "DevKit-Neuro-hub/internal/logger"
+	"DevKit-Neuro-hub/internal/server"
+	main_validator "DevKit-Neuro-hub/internal/validator"
+	"context"
+	"go.uber.org/zap"
 	"log"
-	"net"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	if len(os.Args) == 1 {
-		fmt.Println("Please provide host:port")
-		os.Exit(1)
-	}
 
-	// Resolve the string address to a UDP address
-	udpAddr, err := net.ResolveUDPAddr("udp", os.Args[1])
+	ctx, ctxCancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	defer ctxCancel()
 
+	mainValidator, err := main_validator.NewValidator()
+
+	mainConfig, err := config.LoadConfig(mainValidator)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
-	// Start listening for UDP packages on the given address
-	conn, err := net.ListenUDP("udp", udpAddr)
-
+	logger, err := main_logger.NewLogger(config.DebugLevel)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
+	}
+	logger.Info("config loaded", zap.Any("config", mainConfig))
+
+	mainServer, err := server.NewServer(mainConfig, logger, mainValidator)
+	if err != nil {
+		logger.Fatal("error while starting server", zap.Error(err))
 	}
 
-	// Read from UDP listener in endless loop
-	var buf [1024]byte
-	// Read from UDP listener in endless loop
-	for {
-		n, addr, err := conn.ReadFromUDP(buf[:])
-		if err != nil {
-			log.Fatalln(err)
-		}
-		data := &controller.MessageWitchCRC{}
-		err = proto.Unmarshal(buf[0:n], data)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		// Функция проверки сообщения на подлинность
-		err = utils.AuthenticationCRC(data)
-		if err != nil {
-			log.Println(err)
-		} else {
-			// Продолжаем работу с пакетом
+	defer mainServer.Conn.Close()
 
-			//TODO в случае чего поменять сообщение из protobuf
-			msg := &controller.ChannelsDataSet{}
-
-			err = proto.Unmarshal(data.Msg[0:], msg)
-			if err != nil {
-				log.Fatalln(err)
-			}
-			log.Print("> ", data)
-			log.Println(msg)
-
-			// Write back the message over UPD
-			conn.WriteToUDP([]byte("Hello UDP Client\n"), addr)
-		}
-	}
+	mainServer.Run(ctx)
 }

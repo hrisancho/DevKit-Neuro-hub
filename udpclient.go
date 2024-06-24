@@ -1,7 +1,7 @@
 package main
 
 import (
-	controller "DevKit-Neuro-plotter/proto"
+	controller "DevKit-Neuro-hub/proto"
 	"bufio"
 	"fmt"
 	"github.com/snksoft/crc"
